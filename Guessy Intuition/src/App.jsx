@@ -1,4 +1,4 @@
-import { usestate, useEffect, useRef, use, useSyncExternalStore} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './App.css'
 
 const SETTINGS ={
@@ -31,7 +31,7 @@ function App(){
   const [highScore, setHighScore] = useState(() => parseInt(localStorage.getItem('gtn_highscore') || '0'))
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [playerName, setPlayerName] =useState('')
-  const [lastDiff, setLastDiff] = useState(true)
+  const [lastDiff, setLastDiff] = useState(null)
   const inputRef = useRef(null)
   const timerRef = useRef(null)
   const audioCtxRef = useRef(null)
@@ -80,7 +80,7 @@ function App(){
           if(t <=1){
             clearInterval(timerRef.current)
             playSound('cold')
-            setResult({ state: 'cold', text: 'TIME UP! Number was ${target}' })
+            setResult({ state: 'cold', text: `TIME UP! Number was ${target}` })
             setTimeout(resetGame, 2500)
             return 0
           }
@@ -98,7 +98,7 @@ function App(){
     }
   }, [gameStarted])
 
-  const startGame() => {
+  const startGame = () => {
     setGameStarted(true)
     setResult({ state: 'default', text: 'MAKE YOUR GUESS!'})
     setTarget(Math.floor(Math.random() * maxRange) + 1)
@@ -155,7 +155,7 @@ function App(){
     }
 
     const diff = Math.abs(num - target)
-    const warth = lastDiff === null ? '' : diff < lastDiff ? ' (WARMER!)' : ' (COLDER...)'
+    const warmth = lastDiff === null ? '' : diff < lastDiff ? ' (WARMER!)' : ' (COLDER...)'
     setLastDiff(diff)
     if(diff < Math.floor(maxRange / 10)){
       playSound('warm')
@@ -280,11 +280,87 @@ function App(){
 
         <section className={`feedback-zone`}>
           <div className={`result-display ${result.state}`}>
-            gfgfvb
+            <span className="result-icon">{ICONS[result.state]}</span>
+            <span className="result-text">{result.text}</span>
+           </div>
+        </section>
+
+        <section className="stats-zone">
+          <div className="stat-box">
+            <span className="stat-label">CHANCES</span>
+            <span className="stat-value">{attempts}</span>
+          </div>
+          <div className="stat-box">
+            <span className="stat-label">POINTS</span>
+            <span className="stat-value">{attempts}</span>
+          </div>
+          <div className="stat-box stat-best">
+            <span className="stat-label">HIGH SCORE</span>
+            <span className="stat-value">{highScore}</span>
           </div>
         </section>
+
+        <section className="history-zone">
+          <div className="history-header">
+            <span className="retro-label">PREVIOUS:</span>
+            <span className="history-value">{guesses.length}</span>
+          </div>
+          <div className="guess-history">
+            {guesses.slice(-8).map((g,i) => <span key={i}>{g}</span>)}
+          </div>
+        </section>
+
+        <footer className="game-footer">
+          <div className="warmth-bar">
+            <div className="warmth-fill" style={{ width: `${getWarmthPercent()}%` }}></div>
+          </div>
+          <p className="hint-text">PRESS [ENTER] TO GUESS</p>
+        </footer>
       </main>
+      {showVictory && (
+        <div className="victory-overlay active">
+          <div className="victory-content">
+            <div className="pixel-art-star">★</div>
+            <h2 className="victory-title">YOU WIN!</h2>
+            <p className="victory-number">SECRET: <strong>{target}</strong></p>
+            <p className="victory-score">SCORE: <span>{attempts}</span></p>
+            <button className="btn-retro" onClick={() => { setShowVictory(false); resetGame();}}>CONTINUE</button>
+          </div>
+        </div>
+      )}
+      {showLeaderboard && (
+        <div className="leaderboard-overlay active" onClick={(e) => e.target === e.currentTarget && setShowLeaderboard(false)}>
+          <div className="leaderboard-modal">
+            <div className="leaderboard-header">
+            <h2>🏆 HIGH SCORES</h2>
+            <button className="btn-close" onClick={() => setShowLeaderboard(false)}>✕</button>
+            </div>
+            <div className="difficulty-tabs">
+              {['all', 'easy', 'medium', 'hard'].map(f => (
+                <button key={f} className={`tab-btn ${lbFilter === f ? 'active' : ''}`} onClick={() => setLbFilter(f)}>
+                  {f.toUpperCase()}
+                </button>
+              ))}
+            </div>
+             <div className="score-list">
+              {filteredLB.length === 0 ? (
+                <p className="lb-empty">NO SCORES YET</p>
+              ) : (
+                filteredLB.map((entry, i) => (
+                  <div key={i} className={`score-row ${i === 0 ? 'top' : ''}`}>
+                    <span className="score-rank">{['①', '②', '③'][i] || i + 1}</span>
+                    <span className="score-name">{entry.name || 'ANON'}</span>
+                    <span className={`score-difficulty ${entry.difficulty}`}>{entry.difficulty.toUpperCase()}</span>
+                    <span className="score-points">{entry.score}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       </>
   )
-  }
 }
+
+export default App
