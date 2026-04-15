@@ -205,5 +205,22 @@ h1{
 }
 
 .btn-retro{
-  
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  padding:0.7rem 1 rem;
+  background: var(--bg-panel);
+  border:2px solid var(--neon -cyan);
+  color: var(--neon-cyan);
+  cursor: pointer;
+  text-transform:uppercase;
+  letter-spacing: 1px;
+  transition:all 0.15s;
+  box-shadow:0 3px 0 #005555, 0 0 10px vvar(--border-glow);
 }
+
+.btn-retro:hover{
+  background:var(--neon-cyan);
+  color: var(--bg-dark);
+  transform: translateY(-2px);hg
+}
+
