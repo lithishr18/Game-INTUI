@@ -1,4 +1,4 @@
-# Guess The Number
+# Arcade Guess Arena
 
 A browser game built with React and Vite. It combines retro arcade styling with fast, clear gameplay: choose a difficulty, start the round, and chase the secret number while the timer counts down.
 
