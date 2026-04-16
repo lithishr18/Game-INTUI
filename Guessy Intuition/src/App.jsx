@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css'
 
 const SETTINGS ={
   easy: { max: 50, attempts: 10 , timeLimit: 60},
   medium: { max: 100, attempts: 10, timeLimit: 60},
-  hard: { max:200, attempts: 8, timeLimit: 60}
+  hard: { max:200, attempts: 10, timeLimit: 60}
 }
 
 const ICONS = {
@@ -28,7 +28,7 @@ function App(){
   const [gameStarted, setGameStarted] = useState(false)
   const [showVictory, setShowVictory] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
-  const [highScore, setHighScore] = useState(() => parseInt(localStorage.getItem('gtn_highscore') || '0'))
+  const [highScore, setHighScore] = useState(() => parseInt(localStorage.getItem('gtn_highscore_' + mode) || '0'))
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [playerName, setPlayerName] =useState('')
   const [lastDiff, setLastDiff] = useState(null)
@@ -38,12 +38,15 @@ function App(){
 
   const getAudioCtx = () => {
     if(!audioCtxRef.current){
-      audioCtxRef.current = new (window.Audio.Context || window.webkitAudioContext)()
-
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      audioCtxRef.current = new AudioContext()
+    }
+    if(audioCtxRef.current.state === 'suspended'){
+      audioCtxRef.current.resume().catch(() => {})
     }
     return audioCtxRef.current
   }
-  const playSound = (type) => {
+  const playSound = useCallback((type) => {
     if(!soundEnabled) return
     try{
       const ctx =getAudioCtx()
@@ -53,7 +56,34 @@ function App(){
         guess: [{ freq: 440, dur:0.1, vol:0.1, wave: 'sine'}, {freq:520, dur: 0.1, vol: 0.08, wave: 'sine'}],
         warm: [{ freq: 600, dur: 0.18, vol: 0.12, wave: 'sine'},{freq:800, dur:0.18, vol:0.1, wave:'sine'}],
         cold: [{ freq: 220, dur: 0.25, vol: 0.1, wave: 'sawtooth'}],
-        victory: [{ freq: 523.25, dur: 0.4, vol:0.15,wave: 'sine'},{freq: 659.25, dur:0.4, vol: 0.15, wave: 'sine'}],
+        victory: [
+          { freq: 261.63, dur: 0.6, vol: 0.18, wave: 'triangle', delay: 0 },
+          { freq: 329.63, dur: 0.6, vol: 0.16, wave: 'triangle', delay: 0 },
+          { freq: 392.00, dur: 0.6, vol: 0.15, wave: 'triangle', delay: 0 },
+          { freq: 523.25, dur: 0.25, vol: 0.2, wave: 'triangle', delay: 0.15 },
+          { freq: 659.25, dur: 0.25, vol: 0.2, wave: 'triangle', delay: 0.35 },
+          { freq: 783.99, dur: 0.25, vol: 0.22, wave: 'triangle', delay: 0.55 },
+          { freq: 987.77, dur: 0.35, vol: 0.22, wave: 'sine', delay: 0.75 },
+          { freq: 1174.66, dur: 0.5, vol: 0.2, wave: 'sine', delay: 1.0 },
+          { freq: 523.25, dur: 0.4, vol: 0.18, wave: 'triangle', delay: 1.3 },
+          { freq: 1046.5, dur: 0.8, vol: 0.22, wave: 'triangle', delay: 1.5 }
+        ],
+        victoryWin: [
+          { freq: 523.25, dur: 0.12, vol: 0.22, wave: 'triangle', delay: 0 },
+          { freq: 659.25, dur: 0.12, vol: 0.22, wave: 'triangle', delay: 0.12 },
+          { freq: 783.99, dur: 0.12, vol: 0.24, wave: 'triangle', delay: 0.24 },
+          { freq: 987.77, dur: 0.12, vol: 0.24, wave: 'triangle', delay: 0.36 },
+          { freq: 1174.66, dur: 0.12, vol: 0.26, wave: 'triangle', delay: 0.48 },
+          { freq: 1318.51, dur: 0.12, vol: 0.26, wave: 'triangle', delay: 0.60 },
+          { freq: 1567.98, dur: 0.12, vol: 0.28, wave: 'triangle', delay: 0.72 },
+          { freq: 2093.00, dur: 0.5, vol: 0.3, wave: 'sine', delay: 0.9 }
+        ],
+        popup: [
+          { freq: 523.25, dur: 0.15, vol: 0.18, wave: 'triangle', delay: 0 },
+          { freq: 659.25, dur: 0.15, vol: 0.18, wave: 'triangle', delay: 0.15 },
+          { freq: 783.99, dur: 0.2, vol: 0.2, wave: 'triangle', delay: 0.30 },
+          { freq: 1046.5, dur: 0.4, vol: 0.22, wave: 'sine', delay: 0.5 }
+        ],
         hint: [{ freq: 523.25, dur:0.15, vol:0.1, wave: 'sine'}, { freq: 659.25, dur:0.15, vol:0.1, wave: 'sine'}]
       }
 
@@ -70,8 +100,20 @@ function App(){
         osc.start(now + (s.delay || 0))
         osc.stop(now +(s.delay || 0) + s.dur)
       })
-    }catch(e){}
-  }
+    }catch{}
+  }, [soundEnabled])
+
+  const resetGame = useCallback(() => {
+    setGameStarted(false)
+    setGuess('')
+    setResult({state:'default', text: 'READY PLAYER ONE'})
+    setAttempts(SETTINGS[mode].attempts)
+    setHints(1)
+    setGuesses([])
+    setTimeLeft(SETTINGS[mode].timeLimit)
+    setShowVictory(false)
+    setTarget(Math.floor((Math.random() * SETTINGS[mode].max) +1))
+  }, [mode])
 
   useEffect(() => {
     if(gameStarted && timeLeft >0){
@@ -90,7 +132,7 @@ function App(){
       }, 1000)
     }
     return () => clearInterval(timerRef.current)
-  }, [gameStarted, timeLeft] )
+  }, [gameStarted, timeLeft, playSound, resetGame, target] )
 
   useEffect(() => {
     if(gameStarted && inputRef.current){
@@ -109,24 +151,14 @@ function App(){
     setLastDiff(null)
 
   }
-  const resetGame = () => {
-    setGameStarted(false)
-    setGuess('')
-    setResult({state:'default', text: 'READY PLAYER ONE'})
-    setAttempts(SETTINGS[mode].attempts)
-    setHints(1)
-    setGuesses([])
-    setTimeLeft(SETTINGS[mode].timeLimit)
-    setShowVictory(false)
-    setTarget(Math.floor((Math.random() * SETTINGS[mode].max) +1))
-  }
 
   const changeMode = (newMode) => {
+    setTarget(Math.floor(Math.random() * SETTINGS[newMode].max) + 1)
     setMode(newMode)
     setMAXRange(SETTINGS[newMode].max)
     setAttempts(SETTINGS[newMode].attempts)
     setTimeLeft(SETTINGS[newMode].timeLimit)
-    setTarget(Math.floor(Math.random() * SETTINGS[newMode].max) + 1)
+    setHighScore(parseInt(localStorage.getItem('gtn_highscore_' + newMode) || '0'))
     setGuesses([])
     setResult({ state: 'default', text: 'LEVEL CHANGED'})
     setGameStarted(false)
@@ -144,25 +176,31 @@ function App(){
     playSound('guess')
     setGuesses([...guesses, num])
     if(num === target){
+      playSound('victoryWin')
       playSound('victory')
     setResult({ state: 'victory', text: `YOU WIN! The number was ${target}`})
     if(attempts > highScore){
       setHighScore(attempts)
-      localStorage.setItem('gtn_highscore', String(attempts))
+      localStorage.setItem('gtn_highscore_' + mode, String(attempts))
     }
-    setTimeout(() => setShowVictory(true), 800)
+    saveLeaderboard({ name: playerName || 'ANON', difficulty: mode, score: attempts, date: Date.now() })
+    setTimeout(() => {
+      playSound('popup')
+      setShowVictory(true)
+    }, 800)
     return
     }
 
     const diff = Math.abs(num - target)
+    const direction = num > target ? 'TOO HIGH' : 'TOO LOW'
     const warmth = lastDiff === null ? '' : diff < lastDiff ? ' (WARMER!)' : ' (COLDER...)'
     setLastDiff(diff)
     if(diff < Math.floor(maxRange / 10)){
       playSound('warm')
-      setResult({ state: 'warm', text: `CLOSE!${warmth}`})
+      setResult({ state: 'warm', text: `${direction}!${warmth}`})
     } else{
       playSound('cold')
-      setResult({ state: 'cold', text: `MISS!${warmth}`})
+      setResult({ state: 'cold', text: `${direction}!${warmth}`})
     }
     const newAttempts = attempts -1
     setAttempts(newAttempts)
@@ -192,6 +230,11 @@ function App(){
   const loadLeaderboard = () => {
     try { return JSON.parse(localStorage.getItem(LB_KEY) || '[]') } catch{ return []}
   }
+  const saveLeaderboard = (entry) => {
+    const current = loadLeaderboard()
+    current.push(entry)
+    localStorage.setItem(LB_KEY, JSON.stringify(current))
+  }
   const [lbFilter, setLbFilter] = useState('all')
   const leaderboard = loadLeaderboard().sort((a,b) => b.score - a.score).slice(0,15)
   const filteredLB = lbFilter === 'all' ? leaderboard : leaderboard.filter(e => e.difficulty === lbFilter)
@@ -219,7 +262,7 @@ function App(){
             value = {playerName}
             onChange={e => setPlayerName(e.target.value)}
             />
-            <button className="btn-retro btn-small" onClick={() => setShowLeaderboard(true)}>SCORES</button>
+            <button className="btn-retro btn-small" onClick={() => { playSound('popup'); setShowLeaderboard(true); }}>SCORES</button>
         </div>
         </section>
 
@@ -277,14 +320,12 @@ function App(){
             <span className="blink">► START ◄</span>
           </button>
         </section>
-
         <section className={`feedback-zone`}>
           <div className={`result-display ${result.state}`}>
             <span className="result-icon">{ICONS[result.state]}</span>
             <span className="result-text">{result.text}</span>
            </div>
         </section>
-
         <section className="stats-zone">
           <div className="stat-box">
             <span className="stat-label">CHANCES</span>
@@ -299,7 +340,6 @@ function App(){
             <span className="stat-value">{highScore}</span>
           </div>
         </section>
-
         <section className="history-zone">
           <div className="history-header">
             <span className="retro-label">PREVIOUS:</span>
@@ -309,7 +349,6 @@ function App(){
             {guesses.slice(-8).map((g,i) => <span key={i}>{g}</span>)}
           </div>
         </section>
-
         <footer className="game-footer">
           <div className="warmth-bar">
             <div className="warmth-fill" style={{ width: `${getWarmthPercent()}%` }}></div>
@@ -362,5 +401,4 @@ function App(){
       </>
   )
 }
-
 export default App

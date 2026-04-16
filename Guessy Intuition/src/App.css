@@ -81,8 +81,9 @@ body{
 .game-container{
   position:relative;
   z-index: 1;
-  width:100%;
-  max-width:520px;
+  width:min(100%, 600px);
+  max-width:600px;
+  margin: 0 auto;
   background: var(--bg-screen);
   border: 3px solid var(--neon-cyan);
   border-radius: 4px;
@@ -734,6 +735,10 @@ h1{
 }
 
 .leaderboard-overlay.active .leaderboard-modal{
+  transform: scale(1) translateY(0);
+}
+
+.leaderboard-header{
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -747,18 +752,6 @@ h1{
   color: var(--neon-yellow);
   margin: 0;
   letter-spacing: 2px;
-}
-
-.btn-close{
-  width:28px;
-  height:28px;
-  background: transparent;
-  border: 2px solid var(--neon-pink);
-  border-radius: 2px;
-  color: var(--neon-pink);
-  font-size: 1rem;
-  cursor:pointer;
-  transition:all 0.2s;
 }
 
 .btn-close:hover{
@@ -890,5 +883,30 @@ h1{
 @media (max-width: 400px){
   .game-container{
     padding: 1rem;
+  }
+
+  .input-zone{
+    flex-direction: column;
+  }
+
+  .stats-zone{
+    gap: 0.4rem;
+  }
+
+  .stat-value{
+    font-size: 1.4rem;
+  }
+
+  h1{
+    font-size: 0.8rem;
+  }
+}
+
+@media(prefers-reduced-motion: reduce){
+  *,
+  *::before,
+  *::after{
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
