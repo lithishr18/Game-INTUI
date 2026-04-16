@@ -5,6 +5,7 @@
   --neon-pink:#ff2a6d;
   --neon-cyan: #05d9e8;
   --neon-yellow: #f7f052;
+  --neon-green: #39ff14;
   --neon-orange: #ff6b35;
   --neon-purple: #bd00ff;
   --text-primary: #05d9e8;
@@ -20,7 +21,7 @@
 }
 
 *{
-  box-sizing: border-box;;
+  box-sizing: border-box;
 }
 
 body{
@@ -77,7 +78,7 @@ body{
   50%{opacity:0.98;}
 }
 
--game-container{
+.game-container{
   position:relative;
   z-index: 1;
   width:100%;
@@ -118,7 +119,7 @@ filter:brightness(3);
   color: var(--neon-pink);
   letter-spacing:0.5rem;
   margin-bottom:0.5rem;
-  animation: blink is step-end infinite;
+  animation: blink 1s step-end infinite;
 }
 
 @keyframes blink{
@@ -207,15 +208,15 @@ h1{
 .btn-retro{
   font-family: var(--font-pixel);
   font-size: 0.6rem;
-  padding:0.7rem 1 rem;
+  padding:0.7rem 1rem;
   background: var(--bg-panel);
-  border:2px solid var(--neon -cyan);
+  border:2px solid var(--neon-cyan);
   color: var(--neon-cyan);
   cursor: pointer;
   text-transform:uppercase;
   letter-spacing: 1px;
   transition:all 0.15s;
-  box-shadow:0 3px 0 #005555, 0 0 10px vvar(--border-glow);
+  box-shadow:0 3px 0 #005555, 0 0 10px var(--border-glow);
 }
 
 .btn-retro:hover{
@@ -266,7 +267,7 @@ h1{
     color: var(--bg-dark);
 }
 
-.btn-seconday span:last-child{
+.btn-secondary span:last-child{
   margin-left:0.3rem;
 }
 
@@ -541,21 +542,21 @@ h1{
 }
 
 .stat-box:nth-child(2) .stat-value {
-  color: var --neon-yellow;
+  color: var(--neon-yellow);
 }
 
 .stat-box.stat-best{
-  border-color: var var(--neon-purple);
+  border-color: var(--neon-purple);
 }
 
 .stat-box.stat-best .stat-value{
-  color: var(--neon-pucd ple);
+  color: var(--neon-purple);
   text-shadow: 0 0 10px var(--neon-purple);
 }
 
 .history-zone{
   padding-top: 1rem;
-  border-top: 2px dashed var(--border-dim)4;
+  border-top: 2px dashed var(--border-dim);
 }
 
 .history-header{
@@ -593,9 +594,9 @@ h1{
 }
 
 @keyframes chipPop{
-  0% { opacity: 0; transorm: scale(0.5) translateY(-10px);}
+  0% { opacity: 0; transform: scale(0.5) translateY(-10px);}
   70%{ transform: scale(1.1) translateY(2px);}
-  100% { opacity:1; transform: scale(1) translateY()}
+  100% { opacity:1; transform: scale(1) translateY(0);}
 }
 
 .game-footer{
@@ -608,7 +609,7 @@ h1{
 .warmth-bar{
   height: 6px;
   background: var(--bg-dark);
-  border-top: 10x solid var(--border-dim);
+  border-top: 1px solid var(--border-dim);
   border-radius: 2px;
   margin-bottom: 0.75rem;
   overflow:hidden;
@@ -667,7 +668,7 @@ h1{
 
 @keyframes starSpin{
   from{ transform: rotate(0deg);}
-  to { tansform: rotate(360deg);}
+  to { transform: rotate(360deg);}
 }
 
 .victory-title{
