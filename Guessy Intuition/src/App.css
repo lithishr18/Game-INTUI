@@ -109,7 +109,7 @@ filter:brightness(3);
 }
 
 .game-header{
-  test-align: center;
+  text-align: center;
   margin-bottom: 1.5rem;
 }
 
@@ -651,3 +651,70 @@ h1{
   text-align:center;
   animation: victoryEnter 0.6s var(--ease-arcade);
 }
+
+@keyframes victoryEnter{
+  0% { transform: scale(0) rotate(-180deg); opacity:0;}
+  100% { transform: scale(1) rotate(0deg); opacity:1;}
+}
+
+.pixel-art-star{
+  font-size: 4rem;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 20px var(--neon-yellow), 0 0 40px var(--neon-orange);
+  animation:starSpin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes starSpin{
+  from{ transform: rotate(0deg);}
+  to { tansform: rotate(360deg);}
+}
+
+.victory-title{
+  font-family: var(--font-pixel);
+  font-size:1.5rem;
+  color: var(--neon-green);
+  margin: 0 0 0.75rem;
+  text-shadow: 0 0 20px var(--neon-green);
+}
+
+.victory-number{
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem;
+}
+
+.victory-number strong{
+  font-size: 2rem;
+  color: var(--neon-pink);
+}
+
+.victory-score{
+  font-size: 1rem;
+  color: var(--text-dim);
+  margin: 0 0 1.5rem;
+}
+
+.victory-score span{
+  font-size: 1.5rem;
+  color: var(--neon-yellow);
+}
+
+.leaderboard-overlay{
+  position:fixed;
+  inset:0;
+  background: rgba(10,10,15,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.leaderboard-overlay.active{
+  opacity:1;
+  pointer-events: auto;
+}
+
